@@ -9,6 +9,16 @@ const connection = mysql.createConnection({
   database: 'company_info',
 });
 
+connection.connect(function (err) {
+    if (err) {
+      console.error('Error connecting to MySQL:', err);
+      // Optionally, display a message to the user or terminate the application
+    } else {
+      console.log('Connected to MySQL server');
+      showMainMenu();
+    }
+  });
+
 function handleMenuOption(option) {
     switch (option) {
       case 'View all departments':
