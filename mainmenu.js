@@ -113,4 +113,17 @@ function handleMenuOption(option) {
         break;
     }
   }
+
+function getAllDepartments() {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT * FROM departments';
   
+      connection.query(query, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
