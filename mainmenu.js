@@ -114,9 +114,51 @@ function handleMenuOption(option) {
     }
   }
 
-function getAllDepartments() {
+  function getAllDepartments() {
     return new Promise((resolve, reject) => {
       const query = 'SELECT * FROM departments';
+  
+      connection.query(query, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
+function addDepartment() {
+    return new Promise((resolve, reject) => {
+      inquirer
+        .prompt([
+          {
+            type: 'input',
+            name: 'departmentName',
+            message: 'Enter the name of the department:',
+          },
+        ])
+        .then((answers) => {
+          const { departmentName } = answers;
+  
+          const query = 'INSERT INTO departments (department_name) VALUES (?)';
+          const values = [departmentName];
+  
+          connection.query(query, values, (error, results) => {
+            if (error) {
+              reject(error);
+            } else {
+              console.log('Department added successfully.');
+              resolve();
+            }
+          });
+        });
+    });
+  }
+
+function getAllRoles() {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT * FROM roles';
   
       connection.query(query, (error, results) => {
         if (error) {
