@@ -1,31 +1,36 @@
-const inquirer = require('inquirer');
 const mysql = require('mysql2');
-const consoleTable = require('console.table');
 const fs = require('fs');
+const inquirer = require('inquirer');
+const consoleTable = require('console.table');
 
-const connection = mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'root',
-    password: 'ilovemyfamily',
-    database: 'company_info',
-  });
-  
-  fs.readFile('seeds.sql', 'utf8', (error, data) => {
+// Create a connection pool to handle database connections
+const connection = mysql.createPool({
+  connectionLimit: 10, // Limit the number of concurrent connections
+  host: '127.0.0.1',
+  user: 'root',
+  password: 'ilovemyfamily',
+  database: 'company_info',
+});
+
+// Read the seeds.sql file
+fs.readFile('seeds.sql', 'utf8', (error, data) => {
+  if (error) {
+    console.error('Error reading seeds.sql file:', error);
+    return;
+  }
+
+  // Execute the SQL statements from the seeds.sql file
+  connection.query(data, (error, results) => {
     if (error) {
-      console.error('Error reading seeds.sql file:', error);
-      return;
+      console.error('Error executing seeds.sql:', error);
+    } else {
+      console.log('Seeds.sql executed successfully.');
     }
-  
-    connection.query(data, (error, results) => {
-      if (error) {
-        console.error('Error executing seeds.sql:', error);
-      } else {
-        console.log('seeds.sql executed successfully.');
-      }
-      showMainMenu();
-    });
+    showMainMenu();
   });
+});
   
+  // Function to handle the selected menu option
   function handleMenuOption(option) {
     switch (option) {
       case 'View all departments':
@@ -50,6 +55,7 @@ const connection = mysql.createConnection({
         updateEmployeeRole();
         break;
       case 'Exit':
+        // Close the database connection and terminate the application
         connection.end((err) => {
           if (err) {
             console.error('Error closing the database connection:', err);
@@ -62,6 +68,7 @@ const connection = mysql.createConnection({
     }
   }
   
+  // Function to retrieve all departments from the database
   function getAllDepartments() {
     const query = 'SELECT * FROM departments';
   
@@ -75,6 +82,7 @@ const connection = mysql.createConnection({
     });
   }
   
+  // Function to add a new department to the database
   function addDepartment() {
     inquirer
       .prompt([
@@ -101,6 +109,7 @@ const connection = mysql.createConnection({
       });
   }
   
+  // Function to retrieve all roles from the database
   function getAllRoles() {
     const query = 'SELECT * FROM roles';
   
@@ -114,6 +123,7 @@ const connection = mysql.createConnection({
     });
   }
   
+  // Function to add a new role to the database
   function addRole() {
     inquirer
       .prompt([
@@ -129,16 +139,16 @@ const connection = mysql.createConnection({
         },
         {
           type: 'input',
-          name: 'department_id',
+          name: 'departmentId',
           message: 'Enter the department ID for the role:',
         },
       ])
       .then((answers) => {
-        const { roleName, salary, department_id } = answers;
+        const { roleName, salary, departmentId } = answers;
   
         const query =
-          'INSERT INTO roles (role_title, salary, department_id) VALUES (?, ?, ?)';
-        const values = [roleName, salary, department_id];
+          'INSERT INTO roles (name, salary, department_id) VALUES (?, ?, ?)';
+        const values = [roleName, salary, departmentId];
   
         connection.query(query, values, (error, results) => {
           if (error) {
@@ -151,6 +161,7 @@ const connection = mysql.createConnection({
       });
   }
   
+  // Function to retrieve all employees from the database
   function getAllEmployees() {
     const query = 'SELECT * FROM employees';
   
@@ -164,6 +175,7 @@ const connection = mysql.createConnection({
     });
   }
   
+  // Function to add a new employee to the database
   function addEmployee() {
     inquirer
       .prompt([
@@ -206,12 +218,13 @@ const connection = mysql.createConnection({
       });
   }
   
+  // Function to update an employee's role in the database
   function updateEmployeeRole() {
     inquirer
       .prompt([
         {
           type: 'input',
-          name: 'employee_id',
+          name: 'employeeId',
           message: "Enter the ID of the employee to update:",
         },
         {
@@ -221,11 +234,11 @@ const connection = mysql.createConnection({
         },
       ])
       .then((answers) => {
-        const { employee_id, newRoleId } = answers;
+        const { employeeId, newRoleId } = answers;
   
         const query =
           'UPDATE employees SET role_id = ? WHERE employee_id = ?';
-        const values = [newRoleId, employee_id];
+        const values = [newRoleId, employeeId];
   
         connection.query(query, values, (error, results) => {
           if (error) {
@@ -262,5 +275,5 @@ const connection = mysql.createConnection({
       });
   }
   
+  // Start the application
   showMainMenu();
-  
